@@ -3,7 +3,14 @@
 #include<stdlib.h>
 #include<time.h>
 #include<conio.h>
-#define MAX_PLAYER 3
+
+enum
+{
+    PLAYER_JINRO  ,
+    PLAYER_PROPHET,
+    PLAYER_THIEF  ,
+    MAX_PLAYER,
+};
 #define PLAYER_NONE 8//表示に限り+1する(1originの影響)
 
 typedef struct playe
@@ -11,17 +18,20 @@ typedef struct playe
     char username[30];
     int position;
     int alive;
+    int vote;
 }player;
 
 player user[MAX_PLAYER];
+static void nightTurn(void);
+static void dayTurn(void);
 
 static void getPosition(void);
 static void openPosition(void);
-static void nightTurn(void);
 static void waitKey(char);
 static char getKey(void);
 static void clearScreen(void);
 static int getTarget(void);
+static void judgeVictory(void);
 
 char positionName[MAX_PLAYER][50] =
 {
@@ -29,6 +39,13 @@ char positionName[MAX_PLAYER][50] =
     "占い師",
     "怪盗"
 };
+int deathflag = NULL;
+char target[350] = "";
+char buff[150] = "";
+int f = 0;
+int e = 0;
+int targetPlayer = 0;
+
 
 int main()
 {
@@ -52,10 +69,18 @@ int main()
     }
 
     openPosition();
+    while (1)
+    {
+        nightTurn();
 
-    nightTurn();
+        printf("おはようございます！");
 
-        return 0;
+        dayTurn();
+
+        printf("夜に入ります。おやすみなさい...\n");
+    }
+        
+    return 0;
 }
 
 static void
@@ -114,11 +139,7 @@ static void openPosition(void)
 
 static void nightTurn(void)
 {
-    char target[350] = "";
-    char buff[150] = "";
-    int f = 0;
-    int e = 0;
-    int targetPlayer = 0;
+   
     for (int i = 0; i < MAX_PLAYER;i++)
     {
         clearScreen();
@@ -131,7 +152,7 @@ static void nightTurn(void)
             target[0] = '\0';
             switch (user[i].position)
             {
-                case 0://人狼の場合
+                case PLAYER_JINRO://人狼の場合
                     for (f = 0; f < MAX_PLAYER; f++)
                     {
                         if (user[f].alive && i != f)
@@ -147,6 +168,7 @@ static void nightTurn(void)
                     if (targetPlayer == PLAYER_NONE)
                     {
                         printf("この夜をスキップします...Spaceを押し、朝までお待ちください。\n");
+                        deathflag = NULL;
                         waitKey(' ');
                         break;
                     }
@@ -156,10 +178,11 @@ static void nightTurn(void)
                     if (targetPlayer != PLAYER_NONE)//人狼噛み処理
                     {
                         user[targetPlayer].alive = 0;
+                        deathflag = targetPlayer;
                     }
                     break;
 
-                case 1://占い師の場合
+                case PLAYER_PROPHET://占い師の場合
                     /* 対象の人をリストアップ */
                     for (f = 0; f < MAX_PLAYER; f++)
                     {
@@ -184,6 +207,7 @@ static void nightTurn(void)
                     if (targetPlayer == PLAYER_NONE)
                     {
                         printf("この夜をスキップします...Spaceを押し、朝までお待ちください。\n");
+                        deathflag = NULL;
                         waitKey(' ');
                         break;
                     }
@@ -192,7 +216,7 @@ static void nightTurn(void)
                     waitKey(' ');
                     break;
 
-                case 2://怪盗の場合
+                case PLAYER_THIEF://怪盗の場合
                     for (f = 0; f < MAX_PLAYER; f++)
                     {
                         if (user[f].alive && i != f)
@@ -228,7 +252,103 @@ static void nightTurn(void)
             
         }
     }
-   
+    int aliveCnt = 0;
+    
+    for (int i = 0; i < MAX_PLAYER; i++)
+    {
+        if (user[i].alive && user[i].position != PLAYER_JINRO)
+        {
+            aliveCnt += 1;
+        }
+    }
+    if (aliveCnt <= 1)
+    {
+        printf("\n人狼陣営の勝利です！！");
+        exit(0);
+    }
+}
+
+static void dayTurn(void)
+{
+    buff[0] = NULL;
+    target[0] = NULL;
+    int maxVote = 0;
+    int aliveCnt = 0;
+    if (deathflag != NULL)
+    {
+        printf("夜に%sさんが襲撃されました...\n\n",user[deathflag].username);
+    }
+    else
+    {
+        printf("今日はだれも殺されませんでした。\n\n");
+    }
+    printf("それでは話し合いを始めます。投票を始めるには、Spaceを押して下さい。\n");
+    waitKey(' ');
+
+    printf("それでは投票に入ります。");
+    for (int i = 0;i < MAX_PLAYER;i++)
+    {
+        clearScreen();
+        printf("%sさん、Spaceを押してください\n", user[i].username);
+        waitKey(' ');
+
+        if (user[i].alive)
+        {
+            for (int f = 0; f < MAX_PLAYER; f++)
+            {
+                if (user[f].alive && i != f)
+                {
+                    sprintf_s(buff, 150, "%d:%s\n", f + 1, user[f].username);
+                    strcat(target, buff);
+                }
+            }
+            sprintf(buff, "%d:投票しない\n", PLAYER_NONE + 1);
+            strcat(target, buff);
+            printf("投票する人を選んでください---\n%s", target);
+            targetPlayer = getTarget() - 1;
+            if (targetPlayer == PLAYER_NONE)
+            {
+                printf("この投票をスキップします...Spaceを押し、お待ちください。\n");
+                waitKey(' ');
+                break;
+            }
+
+            printf("%sに投票します...Spaceを押し、お待ちください。\n", user[targetPlayer].username);
+            user[targetPlayer].vote += 1;
+            waitKey(' ');
+            break;
+        }else
+        {
+
+            printf("あなたは死にました。Spaceを押してお待ちください。\n");
+            waitKey(' ');
+
+        }
+    }
+    for (int i = 0; i < MAX_PLAYER; i++)
+    {
+        if (maxVote < user[i].vote && user[i].alive)
+        {
+            maxVote = i;
+                  
+        }
+        if (user[i].alive && user[i].position != PLAYER_JINRO)
+        {
+            aliveCnt += 1;
+        }
+    }
+    printf("今日は%sさんが追放されます...(%d票)\n",user[maxVote].username,user[maxVote].vote);
+    user[maxVote].alive = 0;
+    if (user[maxVote].position == PLAYER_JINRO)
+    {
+        printf("\n市民陣営の勝利です!!\n");
+        exit(0);
+    }
+    else if (aliveCnt <= 1)
+    {
+        printf("\n人狼陣営の勝利です！！");
+        exit(0);
+    }
 }
 
 static void waitKey(char key)
@@ -281,3 +401,6 @@ static int getTarget(void)
 
     return num;
 }
+
+static void judgeVictory(void)
+{}
