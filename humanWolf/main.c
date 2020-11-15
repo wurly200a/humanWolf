@@ -4,6 +4,7 @@
 #include<time.h>
 #include<conio.h>
 #define MAX_PLAYER 3
+#define PLAYER_NONE 8//表示に限り+1する(1originの影響)
 
 typedef struct playe
 {
@@ -20,8 +21,9 @@ static void nightTurn(void);
 static void waitKey(char);
 static char getKey(void);
 static void clearScreen(void);
+static int getTarget(void);
 
-char positionName[3][50] =
+char positionName[MAX_PLAYER][50] =
 {
     "人狼",
     "占い師",
@@ -112,35 +114,121 @@ static void openPosition(void)
 
 static void nightTurn(void)
 {
+    char target[350] = "";
+    char buff[150] = "";
+    int f = 0;
+    int e = 0;
+    int targetPlayer = 0;
     for (int i = 0; i < MAX_PLAYER;i++)
     {
-        char attack[350] = "";
-        char buff[150];
+        clearScreen();
+        printf("%sさん、Spaceを押してください\n", user[i].username);
+        waitKey(' ');
+        printf("%sさんは%sです\n", user[i].username, positionName[user[i].position]);
+
         if (user[i].alive)
         {
+            target[0] = '\0';
             switch (user[i].position)
             {
                 case 0://人狼の場合
-                    
-                    printf("%sさん、Spaceを押してください\n",user[i].username);
-                    waitKey(' ');
-                    for (int f = 0; f < MAX_PLAYER; f++)
+                    for (f = 0; f < MAX_PLAYER; f++)
                     {
                         if (user[f].alive && i != f)
                         {
-                            sprintf_s(buff, 150, "%d:%s\n",f,user[f].username);
-                            strcat(attack,buff);
+                            sprintf_s(buff, 150, "%d:%s\n",f + 1,user[f].username);
+                            strcat(target,buff);
                         }
                     }
-                    printf("襲撃する人を選んでください---\n%s",attack);
-                    user[getKey()].alive = 0;
-
-
+                    sprintf(buff, "%d:襲撃しない\n", PLAYER_NONE + 1);
+                    strcat(target, buff);
+                    printf("襲撃する人を選んでください---\n%s",target);
+                    targetPlayer = getTarget() - 1;
+                    if (targetPlayer == PLAYER_NONE)
+                    {
+                        printf("この夜をスキップします...Spaceを押し、朝までお待ちください。\n");
+                        waitKey(' ');
+                        break;
+                    }
+                    
+                    printf("%sを攻撃します...Spaceを押し、朝までお待ちください。\n",user[targetPlayer].username);
+                    waitKey(' ');
+                    if (targetPlayer != PLAYER_NONE)//人狼噛み処理
+                    {
+                        user[targetPlayer].alive = 0;
+                    }
                     break;
+
+                case 1://占い師の場合
+                    /* 対象の人をリストアップ */
+                    for (f = 0; f < MAX_PLAYER; f++)
+                    {
+                        if (user[f].alive && i != f)
+                        { /* 生きてて、自分以外 */
+                            sprintf_s(buff, 150, "%d:%s\n", f + 1, user[f].username);
+                            strcat(target, buff);
+                        }
+                    }
+                    sprintf(buff, "%d:占わない\n", PLAYER_NONE + 1);
+                    strcat(target, buff);
+                    printf("占う人を選んで下さい---\n%s",target);
+                    targetPlayer = getTarget() - 1;
+                    if (targetPlayer)
+                    {
+                        sprintf(buff,"人狼ではありません");
+                    }
+                    else
+                    {
+                        sprintf(buff, "人狼です");
+                    }
+                    if (targetPlayer == PLAYER_NONE)
+                    {
+                        printf("この夜をスキップします...Spaceを押し、朝までお待ちください。\n");
+                        waitKey(' ');
+                        break;
+                    }
+                    printf("%sは%s!\n",user[targetPlayer].username,buff);
+                    printf("Spaceを押し、朝までお待ちください...\n");
+                    waitKey(' ');
+                    break;
+
+                case 2://怪盗の場合
+                    for (f = 0; f < MAX_PLAYER; f++)
+                    {
+                        if (user[f].alive && i != f)
+                        {
+                            sprintf_s(buff, 150, "%d:%s\n", f + 1, user[f].username);
+                            strcat(target, buff);
+                        }
+                    }
+                    sprintf(buff, "%d:交換しない\n", PLAYER_NONE + 1);
+                    strcat(target, buff);
+                    printf("交換する人を選んで下さい---\n%s", target);
+                    targetPlayer = getTarget() - 1;
+                    if (targetPlayer == PLAYER_NONE)
+                    {
+                        printf("この夜をスキップします...Spaceを押し、朝までお待ちください。\n");
+                        waitKey(' ');
+                        break;
+                    }
+                    e = user[i].position;
+                    user[i].position = user[targetPlayer].position;
+                    user[targetPlayer].position = e;
+                    printf("%sと役職を交換します...Spaceを押して朝までお待ちください。\n",user[targetPlayer].username);
+                    waitKey(' ');
+                    
+
             }
         }
-    }
+        else
+        {
 
+            printf("あなたは死にました。Spaceを押して朝までお待ちください。\n");
+            waitKey(' ');
+            
+        }
+    }
+   
 }
 
 static void waitKey(char key)
@@ -179,4 +267,17 @@ static void clearScreen(void)
 {
     printf("\033[2J");
     printf("\033[%d;%dH", 0, 0);
+}
+
+static int getTarget(void)
+{
+    int cNum,num;
+
+    do
+    {
+        cNum = getKey();
+        num = cNum - '0';
+    } while ( (num != PLAYER_NONE + 1) && (num < 0 || MAX_PLAYER + 1 < num) );//getKeyで入力できる文字の制限
+
+    return num;
 }
