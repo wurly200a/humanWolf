@@ -47,11 +47,11 @@ int e = 0;
 int targetPlayer = 0;
 
 
-int main()
+int
+humanWolfMain(int argc, char* argv[])
 {
     char buff[70];
 
-    
     for (int e = 0; e < MAX_PLAYER; e++ )
     {
         sprintf_s(buff, 70, "%dP", e + 1);
