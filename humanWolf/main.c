@@ -22,8 +22,11 @@ typedef struct playe
     int vote;
 }player;
 
+#if 0 /* 静的に確保する場合 */
 player user[MAX_PLAYER];
-player *userPtr;
+#else /* 動的に確保する場合 */
+player *user;
+#endif
 static void nightTurn(void);
 static void dayTurn(void);
 
@@ -54,6 +57,8 @@ int
 humanWolfMain(int argc, char* argv[])
 {
     char buff[70];
+
+    user = malloc(sizeof(player)*MAX_PLAYER);
 
     for (int e = 0; e < maxPlayer; e++ )
     {
