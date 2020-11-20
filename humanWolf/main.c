@@ -9,9 +9,10 @@ enum
     PLAYER_JINRO  ,
     PLAYER_PROPHET,
     PLAYER_THIEF  ,
-    MAX_PLAYER,
+    PLAYER_ROLL_MAX
 };
 #define PLAYER_NONE 8//表示に限り+1する(1originの影響)
+#define MAX_PLAYER 3
 
 typedef struct playe
 {
@@ -22,6 +23,7 @@ typedef struct playe
 }player;
 
 player user[MAX_PLAYER];
+player *userPtr;
 static void nightTurn(void);
 static void dayTurn(void);
 
@@ -33,7 +35,7 @@ static void clearScreen(void);
 static int getTarget(void);
 static void judgeVictory(void);
 
-char positionName[MAX_PLAYER][50] =
+char positionName[PLAYER_ROLL_MAX][50] =
 {
     "人狼",
     "占い師",
@@ -45,6 +47,7 @@ char buff[150] = "";
 int f = 0;
 int e = 0;
 int targetPlayer = 0;
+int maxPlayer = (int)MAX_PLAYER;
 
 
 int
@@ -52,7 +55,7 @@ humanWolfMain(int argc, char* argv[])
 {
     char buff[70];
 
-    for (int e = 0; e < MAX_PLAYER; e++ )
+    for (int e = 0; e < maxPlayer; e++ )
     {
         sprintf_s(buff, 70, "%dP", e + 1);
         strcpy_s(user[e].username, 20, buff );
@@ -63,7 +66,7 @@ humanWolfMain(int argc, char* argv[])
 
     getPosition();
 
-    for (int f = 0; f < MAX_PLAYER; f++)//debug
+    for (int f = 0; f < maxPlayer; f++)//debug
     {
         printf("debug:%d,%d\n", f, user[f].position);
     }
@@ -87,7 +90,7 @@ static void
 getPosition(void)
 {
     srand(time(NULL));
-    for (int i = 0; i < MAX_PLAYER; i++)
+    for (int i = 0; i < maxPlayer; i++)
     {
 
         if (i)
@@ -96,7 +99,7 @@ getPosition(void)
 
             do
             {
-                user[i].position = rand() % MAX_PLAYER; /* まずはポジションを取得 */
+                user[i].position = rand() % PLAYER_ROLL_MAX; /* まずはポジションを取得 */
 
                 bSameExist = 0;
                 /* 0～(i-1)までサーチして、同じやつがいたらフラグON */
@@ -114,7 +117,7 @@ getPosition(void)
         }
         else
         { /* iが1の時は最初なので確定 */
-            user[i].position = rand() % MAX_PLAYER;
+            user[i].position = rand() % PLAYER_ROLL_MAX;
         }
     }
 }
@@ -125,7 +128,7 @@ static void openPosition(void)
     char sp = '　';
 
 
-    for (int a = 0; a < MAX_PLAYER; a++)
+    for (int a = 0; a < maxPlayer; a++)
     {
         printf("%sさん、Spaceを押してください。\n", user[a].username);
         waitKey(' ');
@@ -140,7 +143,7 @@ static void openPosition(void)
 static void nightTurn(void)
 {
    
-    for (int i = 0; i < MAX_PLAYER;i++)
+    for (int i = 0; i < maxPlayer;i++)
     {
         clearScreen();
         printf("%sさん、Spaceを押してください\n", user[i].username);
@@ -153,7 +156,7 @@ static void nightTurn(void)
             switch (user[i].position)
             {
                 case PLAYER_JINRO://人狼の場合
-                    for (f = 0; f < MAX_PLAYER; f++)
+                    for (f = 0; f < maxPlayer; f++)
                     {
                         if (user[f].alive && i != f)
                         {
@@ -184,7 +187,7 @@ static void nightTurn(void)
 
                 case PLAYER_PROPHET://占い師の場合
                     /* 対象の人をリストアップ */
-                    for (f = 0; f < MAX_PLAYER; f++)
+                    for (f = 0; f < maxPlayer; f++)
                     {
                         if (user[f].alive && i != f)
                         { /* 生きてて、自分以外 */
@@ -217,7 +220,7 @@ static void nightTurn(void)
                     break;
 
                 case PLAYER_THIEF://怪盗の場合
-                    for (f = 0; f < MAX_PLAYER; f++)
+                    for (f = 0; f < maxPlayer; f++)
                     {
                         if (user[f].alive && i != f)
                         {
@@ -254,7 +257,7 @@ static void nightTurn(void)
     }
     int aliveCnt = 0;
     
-    for (int i = 0; i < MAX_PLAYER; i++)
+    for (int i = 0; i < maxPlayer; i++)
     {
         if (user[i].alive && user[i].position != PLAYER_JINRO)
         {
@@ -287,7 +290,7 @@ static void dayTurn(void)
     waitKey(' ');
 
     printf("それでは投票に入ります。");
-    for (int i = 0;i < MAX_PLAYER;i++)
+    for (int i = 0;i < maxPlayer;i++)
     {
         clearScreen();
         printf("%sさん、Spaceを押してください\n", user[i].username);
@@ -295,7 +298,7 @@ static void dayTurn(void)
 
         if (user[i].alive)
         {
-            for (int f = 0; f < MAX_PLAYER; f++)
+            for (int f = 0; f < maxPlayer; f++)
             {
                 if (user[f].alive && i != f)
                 {
@@ -326,7 +329,7 @@ static void dayTurn(void)
 
         }
     }
-    for (int i = 0; i < MAX_PLAYER; i++)
+    for (int i = 0; i < maxPlayer; i++)
     {
         if (maxVote < user[i].vote && user[i].alive)
         {
@@ -400,7 +403,7 @@ static int getTarget(void)
     {
         cNum = getKey();
         num = cNum - '0';
-    } while ( (num != PLAYER_NONE + 1) && (num < 0 || MAX_PLAYER + 1 < num) );//getKeyで入力できる文字の制限
+    } while ( (num != PLAYER_NONE + 1) && (num < 0 || maxPlayer + 1 < num) );//getKeyで入力できる文字の制限
 
     return num;
 }
