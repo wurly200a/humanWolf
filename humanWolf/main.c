@@ -34,6 +34,7 @@ static void getPosition(void);
 static void openPosition(void);
 static void waitKey(char);
 static char getKey(void);
+static int getNum(void);
 static void clearScreen(void);
 static int getTarget(void);
 static void judgeVictory(void);
@@ -57,8 +58,10 @@ int
 humanWolfMain(int argc, char* argv[])
 {
     char buff[70];
+    printf("プレイヤー人数を入力してください(最大8人)---");
+    maxPlayer = getNum();
 
-    user = malloc(sizeof(player)*MAX_PLAYER);
+    user = malloc(sizeof(player)*maxPlayer);
 
     for (int e = 0; e < maxPlayer; e++ )
     {
@@ -415,3 +418,16 @@ static int getTarget(void)
 
 static void judgeVictory(void)
 {}
+
+static int getNum(void) 
+{
+    int cNum,num;
+
+    do
+    {
+        cNum = getKey();
+        num = cNum - '0';
+    } while ( (num < 0 || 9 < num) );//getKeyで入力できる文字の制限
+
+    return num;
+}
