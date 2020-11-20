@@ -263,7 +263,8 @@ static void nightTurn(void)
     }
     if (aliveCnt <= 1)
     {
-        printf("\nl˜Tw‰c‚ÌŸ—˜‚Å‚·II");
+        printf("\nl˜Tw‰c‚ÌŸ—˜‚Å‚·!!\nSpace‚ð‰Ÿ‚µ‚ÄI—¹‚µ‚Ü‚·B\n");
+        waitKey(' ');
         exit(0);
     }
 }
@@ -341,12 +342,14 @@ static void dayTurn(void)
     user[maxVote].alive = 0;
     if (user[maxVote].position == PLAYER_JINRO)
     {
-        printf("\nŽs–¯w‰c‚ÌŸ—˜‚Å‚·!!\n");
+        printf("\nŽs–¯w‰c‚ÌŸ—˜‚Å‚·!!\nSpace‚ð‰Ÿ‚µ‚ÄI—¹‚µ‚Ü‚·B\n");
+        waitKey(' ');
         exit(0);
     }
     else if (aliveCnt <= 1)
     {
-        printf("\nl˜Tw‰c‚ÌŸ—˜‚Å‚·II");
+        printf("\nl˜Tw‰c‚ÌŸ—˜‚Å‚·!!Space‚ð‰Ÿ‚µ‚ÄI—¹‚µ‚Ü‚·B\n");
+        waitKey(' ');
         exit(0);
     }
 }
