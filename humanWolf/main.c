@@ -76,7 +76,7 @@ humanWolfMain(int argc, char* argv[])
 
     for (int f = 0; f < maxPlayer; f++)//debug
     {
-        printf("debug:%d,%d\n", f, user[f].position);
+        printf("debug:%d,%d,%s\n", f, user[f].position,positionName[user[f].position]);
     }
 
     openPosition();
@@ -84,10 +84,12 @@ humanWolfMain(int argc, char* argv[])
     {
         nightTurn();
 
+        clearScreen();
         printf("おはようございます！");
 
         dayTurn();
 
+        clearScreen();
         printf("夜に入ります。おやすみなさい...\n");
     }
         
@@ -97,36 +99,49 @@ humanWolfMain(int argc, char* argv[])
 static void
 getPosition(void)
 {
-    srand(time(NULL));
+    int jinroMax = (int)1;
+
+    srand(time(NULL) * 3);
+    int getPositionFlag[PLAYER_ROLL_MAX];
+    memset(getPositionFlag, 0, sizeof(getPositionFlag));
+
     for (int i = 0; i < maxPlayer; i++)
     {
+        int bRetry = 0;
 
-        if (i)
-        { /* i が 1以上 */
-            int bSameExist = 0;
+        do
+        {
+            bRetry = 0;
+            user[i].position = rand() % PLAYER_ROLL_MAX; /* まずはポジションを取得 */
 
-            do
+            if( (user[i].position == PLAYER_JINRO) &&
+                (jinroMax <= getPositionFlag[PLAYER_JINRO]) )
+            { /* 人狼が定員オーバー */
+                bRetry = 1;
+            }
+            else
             {
-                user[i].position = rand() % PLAYER_ROLL_MAX; /* まずはポジションを取得 */
-
-                bSameExist = 0;
-                /* 0～(i-1)までサーチして、同じやつがいたらフラグON */
-                for (int g = 0; g <= i - 1; g++)
+                if( (PLAYER_ROLL_MAX <= i) )
                 {
-                    if (user[i].position == user[g].position)
+                    /* 役職数より多くなったらフラグonにしなくていい */
+                }
+                else
+                { /* 役職数より少ない場合は重複チェック  */
+                    /* 同じやつがいたらフラグON */
+                    if( getPositionFlag[user[i].position] )
                     {
-                        bSameExist = 1; /* 同じやつがいた */
+                        bRetry = 1; /* 同じやつがいた*/
                     }
                     else
                     {
+                        /* ok!!! */
                     }
                 }
-            } while (bSameExist); /* 同じやつがいる限り繰り返す */
-        }
-        else
-        { /* iが1の時は最初なので確定 */
-            user[i].position = rand() % PLAYER_ROLL_MAX;
-        }
+
+            }
+        } while (bRetry); /* 条件に合致しない場合は繰り返す */
+
+        getPositionFlag[user[i].position]++;
     }
 }
 
@@ -166,7 +181,7 @@ static void nightTurn(void)
                 case PLAYER_JINRO://人狼の場合
                     for (f = 0; f < maxPlayer; f++)
                     {
-                        if (user[f].alive && i != f)
+                        if (user[f].alive && i != f && !user[f].position == PLAYER_JINRO)//味方と自分、死んでいる人は例外
                         {
                             sprintf_s(buff, 150, "%d:%s\n",f + 1,user[f].username);
                             strcat(target,buff);
@@ -298,9 +313,11 @@ static void dayTurn(void)
     waitKey(' ');
 
     printf("それでは投票に入ります。");
+    
     for (int i = 0;i < maxPlayer;i++)
     {
         clearScreen();
+        target[0] = NULL;
         printf("%sさん、Spaceを押してください\n", user[i].username);
         waitKey(' ');
 
@@ -322,13 +339,13 @@ static void dayTurn(void)
             {
                 printf("この投票をスキップします...Spaceを押し、お待ちください。\n");
                 waitKey(' ');
-                break;
+                continue;
             }
 
             printf("%sに投票します...Spaceを押し、お待ちください。\n", user[targetPlayer].username);
             user[targetPlayer].vote += 1;
             waitKey(' ');
-            break;
+            continue;
         }else
         {
 
@@ -349,8 +366,9 @@ static void dayTurn(void)
             aliveCnt += 1;
         }
     }
-    printf("今日は%sさんが追放されます...(%d票)\n",user[maxVote].username,user[maxVote].vote);
+    printf("今日は%sさんが追放されます...(%d票)\nSpaceを押して下さい。\n",user[maxVote].username,user[maxVote].vote);
     user[maxVote].alive = 0;
+    waitKey(' ');
     if (user[maxVote].position == PLAYER_JINRO)
     {
         printf("\n市民陣営の勝利です!!\nSpaceを押して終了します。\n");
