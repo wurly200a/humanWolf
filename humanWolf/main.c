@@ -128,7 +128,7 @@ getPosition(void)
                 else
                 { /* 役職数より少ない場合は重複チェック  */
                     /* 同じやつがいたらフラグON */
-                    if( getPositionFlag[user[i].position] )
+                    if( getPositionFlag[user[i].position] && !(getPositionFlag[i] <= (int)(maxPlayer - 1) / (int)2))
                     {
                         bRetry = 1; /* 同じやつがいた*/
                     }
