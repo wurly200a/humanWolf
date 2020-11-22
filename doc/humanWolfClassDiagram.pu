@@ -3,6 +3,7 @@
 title HumanWolf
 
 class GameMaster {
+    PrepareGame()
     StartGame()
     DayAction(Player target)
     NightAction(Player target)

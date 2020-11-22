@@ -22,6 +22,7 @@
     <ClCompile Include="entry.cpp" />
     <ClCompile Include="GameMaster.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Player.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
