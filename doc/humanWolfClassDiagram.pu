@@ -1,0 +1,53 @@
+@startuml
+
+title HumanWolf
+
+class GameMaster {
+    StartGame()
+    DayAction(Player target)
+    NightAction(Player target)
+    ChangeRole(Player target1, Player target2)
+    DisplayPredictRole(Player target)
+    Kill(Player target)
+    Judge()
+    EndGame()
+}
+
+'class RolePaper {
+'role
+'}
+
+class Player {
+    name
+    role
+    alive
+    vote(Player target)
+}
+
+class HumanWolf{
+    Kill(Player target)
+}
+
+
+class Prophet{
+    Predict(Player target)
+}
+
+Class Thief
+{
+    Change(Player target1, Player target2)
+}
+
+
+GameMaster "1" -- "*" Player
+'GameMaster "1" --- "*" HumanWolf
+'GameMaster "1" --- "*" Prophet
+'GameMaster "1" --- "*" Thief
+Player <|-- HumanWolf
+Player <|-- Prophet
+Player <|-- Thief
+
+'GameMaster -- RolePaper
+'Player -- RolePaper
+
+@enduml
