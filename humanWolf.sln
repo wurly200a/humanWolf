@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30711.63
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "humanWolf", "humanWolf\humanWolf.vcxproj", "{901EC348-169A-4813-89D3-697C2795E2E8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "humanWolfCpp", "humanWolfCpp\humanWolfCpp.vcxproj", "{901EC348-169A-4813-89D3-697C2795E2E8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
