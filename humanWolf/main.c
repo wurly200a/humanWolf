@@ -10,6 +10,7 @@ enum
     PLAYER_PROPHET,
     PLAYER_THIEF  ,
     PLAYER_VILLAGER,
+    PLAYER_KNIGHT,
     PLAYER_ROLE_MAX
 };
 #define PLAYER_NONE 8//表示に限り+1する(1originの影響)
@@ -21,6 +22,7 @@ typedef struct playe
     int position;
     int alive;
     int vote;
+   
 }player;
 
 #if 0 /* 静的に確保する場合 */
@@ -45,9 +47,11 @@ char positionName[PLAYER_ROLE_MAX][50] =
     "人狼",
     "占い師",
     "怪盗",
-    "村人"
+    "村人",
+    "騎士"
 };
 int deathflag = NULL;
+int knightNum = NULL;
 char target[350] = "";
 char buff[150] = "";
 int f = 0;
@@ -103,6 +107,7 @@ static void
 getPosition(void)
 {
     int jinroMax = (int)1;
+    int knightMax = (int)1;
 
     srand(time(NULL) * 3);
     int getPositionFlag[PLAYER_ROLE_MAX];
@@ -120,6 +125,11 @@ getPosition(void)
             if( (user[i].position == PLAYER_JINRO) &&
                 (jinroMax <= getPositionFlag[PLAYER_JINRO]) )
             { /* 人狼が定員オーバー */
+                bRetry = 1;
+            }
+            else if ((user[i].position == PLAYER_KNIGHT) &&
+                (knightMax <= getPositionFlag[PLAYER_KNIGHT]))
+            { /* 騎士が定員オーバー */
                 bRetry = 1;
             }
             else
@@ -275,6 +285,31 @@ static void nightTurn(void)
                     printf("Spaceを押して朝までお待ちください。\n");
                     waitKey(' ');
                     break;
+
+                case PLAYER_KNIGHT:
+                    for (f = 0; f < maxPlayer; f++)
+                    {
+                        if (deathflag  == f||user[f].alive && i != f)
+                        {
+                            sprintf_s(buff, 150, "%d:%s\n", f + 1, user[f].username);
+                            strcat(target, buff);
+                        }
+                    }
+                    sprintf(buff, "%d:守らない\n", PLAYER_NONE + 1);
+                    strcat(target, buff);
+                    printf("守る人を選んで下さい---\n%s", target);
+                    targetPlayer = getTarget() - 1;
+                    if (targetPlayer == PLAYER_NONE)
+                    {
+                        printf("この夜をスキップします...Spaceを押し、朝までお待ちください。\n");
+                        waitKey(' ');
+                        break;
+                    }
+                    user[targetPlayer].alive = 1;
+                    knightNum = targetPlayer;
+                    printf("%sを守ります...Spaceを押して朝までお待ちください。\n", user[targetPlayer].username);
+                    waitKey(' ');
+                    break;
                     
 
             }
@@ -310,9 +345,14 @@ static void dayTurn(void)
     target[0] = NULL;
     int maxVote = 0;
     int aliveCnt = 0;
-    if (deathflag != NULL)
+    if (deathflag != NULL && deathflag != knightNum)
     {
         printf("夜に%sさんが襲撃されました...\n\n",user[deathflag].username);
+    }
+    else if(deathflag == knightNum)
+    {
+        printf("%sさんが騎士に防衛されました!\n\n",user[knightNum].username);
+        user[knightNum].alive = 1;//殺される前に騎士が動いた場合処理が必要
     }
     else
     {
@@ -375,6 +415,7 @@ static void dayTurn(void)
             aliveCnt += 1;
         }
     }
+    clearScreen();
     printf("今日は%sさんが追放されます...(%d票)\nSpaceを押して下さい。\n",user[maxVote].username,user[maxVote].vote);
     user[maxVote].alive = 0;
     waitKey(' ');
