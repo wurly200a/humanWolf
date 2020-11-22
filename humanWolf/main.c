@@ -9,6 +9,7 @@ enum
     PLAYER_JINRO  ,
     PLAYER_PROPHET,
     PLAYER_THIEF  ,
+    PLAYER_VILLAGER,
     PLAYER_ROLE_MAX
 };
 #define PLAYER_NONE 8//表示に限り+1する(1originの影響)
@@ -43,7 +44,8 @@ char positionName[PLAYER_ROLE_MAX][50] =
 {
     "人狼",
     "占い師",
-    "怪盗"
+    "怪盗",
+    "村人"
 };
 int deathflag = NULL;
 char target[350] = "";
@@ -267,6 +269,12 @@ static void nightTurn(void)
                     user[targetPlayer].position = e;
                     printf("%sと役職を交換します...Spaceを押して朝までお待ちください。\n",user[targetPlayer].username);
                     waitKey(' ');
+                    break;
+
+                case PLAYER_VILLAGER:
+                    printf("Spaceを押して朝までお待ちください。\n");
+                    waitKey(' ');
+                    break;
                     
 
             }
