@@ -9,7 +9,7 @@ enum
     PLAYER_JINRO  ,
     PLAYER_PROPHET,
     PLAYER_THIEF  ,
-    PLAYER_ROLL_MAX
+    PLAYER_ROLE_MAX
 };
 #define PLAYER_NONE 8//表示に限り+1する(1originの影響)
 #define MAX_PLAYER 3
@@ -39,7 +39,7 @@ static void clearScreen(void);
 static int getTarget(void);
 static void judgeVictory(void);
 
-char positionName[PLAYER_ROLL_MAX][50] =
+char positionName[PLAYER_ROLE_MAX][50] =
 {
     "人狼",
     "占い師",
@@ -102,7 +102,7 @@ getPosition(void)
     int jinroMax = (int)1;
 
     srand(time(NULL) * 3);
-    int getPositionFlag[PLAYER_ROLL_MAX];
+    int getPositionFlag[PLAYER_ROLE_MAX];
     memset(getPositionFlag, 0, sizeof(getPositionFlag));
 
     for (int i = 0; i < maxPlayer; i++)
@@ -112,7 +112,7 @@ getPosition(void)
         do
         {
             bRetry = 0;
-            user[i].position = rand() % PLAYER_ROLL_MAX; /* まずはポジションを取得 */
+            user[i].position = rand() % PLAYER_ROLE_MAX; /* まずはポジションを取得 */
 
             if( (user[i].position == PLAYER_JINRO) &&
                 (jinroMax <= getPositionFlag[PLAYER_JINRO]) )
@@ -121,7 +121,7 @@ getPosition(void)
             }
             else
             {
-                if( (PLAYER_ROLL_MAX <= i) )
+                if( (PLAYER_ROLE_MAX <= i) )
                 {
                     /* 役職数より多くなったらフラグonにしなくていい */
                 }
