@@ -68,6 +68,7 @@ humanWolfMain(int argc, char* argv[])
         sprintf_s(buff, 70, "%dP", e + 1);
         strcpy_s(user[e].username, 20, buff );
         user[e].alive = 1;
+        user[e].vote = 0;
     }
 
     
